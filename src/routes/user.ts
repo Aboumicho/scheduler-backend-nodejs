@@ -5,16 +5,6 @@ import { generateToken } from 'utils/jwt';
 import crypto from "crypto";
 import { isUserTypeValid } from 'constants/user-type';
 
-// Get all users
-router.get('/', async (req, res) => {
-    try {
-        const users = await User.find();
-        res.json(users);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
 // Create a new user
 router.post('/register', async (req, res) => {
 
@@ -31,7 +21,15 @@ router.post('/register', async (req, res) => {
         const newUser = await user.save();
         res.status(201).json(newUser);
     } catch (err) {
-        if (err.code === 11000) {
+        const user = await User.findOne({ email: req.body.email })
+        if(!user.usertype.includes(req.body.usertype)){
+            const updatedUserType = user.usertype;
+            updatedUserType.push(req.body.usertype);
+            Object.assign(user, {usertype: updatedUserType});
+            const newUser = await user.save();
+            res.status(201).json(newUser);
+        }
+        else if (err.code === 11000) {
             // Duplicate email
             res.status(400).json({ message: 'Email already exists' });
         }else{
