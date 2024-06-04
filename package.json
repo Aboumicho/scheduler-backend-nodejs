@@ -1,0 +1,34 @@
+{
+    "name": "nodejs-api",
+    "version": "1.0.0",
+    "description": "backend for scheduler-app",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "webpack",
+        "generate": "graphql-codegen"
+    },
+    "author": "Michel Maroun",
+    "license": "ISC",
+    "keywords": [],
+    "dependencies": {
+        "apollo-datasource": "^3.3.2",
+        "apollo-datasource-rest": "^3.7.0",
+        "apollo-server-express": "^3.10.2",
+        "bcrypt": "^5.1.1",
+        "body-parser": "^1.20.2",
+        "clean-webpack-plugin": "^4.0.0",
+        "dotenv": "^16.0.3",
+        "express": "^4.18.1",
+        "jsonwebtoken": "^9.0.2",
+        "mongodb": "6.7",
+        "mongoose": "^8.4.1",
+        "nodemon-webpack-plugin": "^4.8.1",
+        "ts-loader": "^9.4.1",
+        "tsconfig-paths-webpack-plugin": "^4.0.0",
+        "webpack-node-externals": "^3.0.0"
+    },
+    "devDependencies": {
+        "webpack-cli": "^4.10.0"
+    }
+}
