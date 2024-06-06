@@ -2,6 +2,8 @@ import express from 'express';
 import mongoose, { ConnectOptions } from 'mongoose';
 import bodyParser from 'body-parser';
 import userRouter from "./routes/user";
+import businessRouter from "./routes/business";
+import serviceRouter from "./routes/service";
 
 const app = express();
 
@@ -18,6 +20,7 @@ db.once('open', () => {
 
 // Routes
 app.use('/users', userRouter);
-
+app.use('/business', businessRouter);
+app.use('/service', serviceRouter);
 
 export default app;

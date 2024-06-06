@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import Counter from "./counter";
 import bcrypt from 'bcrypt';
+import { updatePrimaryKey } from "utils/update_primary-key";
 
 export interface IUser extends Document {
     _id: number;
@@ -22,11 +22,7 @@ const userSchema = new mongoose.Schema<IUser>({
 userSchema.pre('save', async function(next) {
     const doc = this;
     if (doc.isNew) {
-        const counter = await Counter.findByIdAndUpdate(
-            { _id: 'userId' },
-            { $inc: { seq: 1 } },
-            { new: true, upsert: true }
-        );
+        const counter = await updatePrimaryKey("userId");
         doc._id = counter.seq;
     }
     if (doc.isModified('password')) {
