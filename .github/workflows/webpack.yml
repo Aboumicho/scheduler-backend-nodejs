@@ -1,37 +1,29 @@
-name: NodeJS with Webpack
+name: CICD
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: [cicd-docker-ec2]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [16.x]
-
+    runs-on: [ubuntu-latest]
     steps:
       - name: Checkout source
-      - uses: actions/checkout@v4
-      
+        uses: actions/checkout@v3
       - name: Login to docker hub
-        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{secrets.DOCKER_PASSWORD}}
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }} 
       - name: Build docker image
-        run: docker build -t aboumicho/scheduler-nodejs-app .
+        run: docker build -t aboumicho/scheduler-backend-nodejs .
       - name: Publish image to docker hub
-        run: docker push aboumicho/scheduler-nodejs-app:latest
-  deploy: 
+        run: docker push aboumicho/scheduler-backend-nodejs:latest
+        
+  deploy:
     needs: build
     runs-on: [aws-ec2]
-    steps: 
+    steps:
       - name: Pull image from docker hub
-        run: docker pull aboumicho/scheduler-nodejs-app:latest
+        run: docker pull aboumicho/scheduler-backend-nodejs:latest
       - name: Delete old container
-        run: docker rm -f scheduler-nodejs-app
+        run: docker rm -f scheduler-backend-nodejs-container
       - name: Run docker container
-        run: docker run -d -p 5000:5000 -name scheduler-nodejs-app-container aboumicho/scheduler-nodejs-app
-
+        run: docker run -d -p 5000:5000 --name scheduler-backend-nodejs-container integrationninjas/nodejs-app
