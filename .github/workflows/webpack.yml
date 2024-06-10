@@ -26,5 +26,12 @@ jobs:
         run: docker push aboumicho/scheduler-nodejs-app:latest
   deploy: 
     needs: build
-    # runs-on:
+    runs-on: [aws-ec2]
+    steps: 
+      - name: Pull image from docker hub
+        run: docker pull aboumicho/scheduler-nodejs-app:latest
+      - name: Delete old container
+        run: docker rm -f scheduler-nodejs-app
+      - name: Run docker container
+        run: docker run -d -p 5000:5000 -name scheduler-nodejs-app-container aboumicho/scheduler-nodejs-app
 
