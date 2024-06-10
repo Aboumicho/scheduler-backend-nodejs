@@ -15,14 +15,16 @@ jobs:
         node-version: [16.x]
 
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout source
+      - uses: actions/checkout@v4
+      
+      - name: Login to docker hub
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{secrets.DOCKER_PASSWORD}}
+      - name: Build docker image
+        run: docker build -t aboumicho/scheduler-nodejs-app .
+      - name: Publish image to docker hub
+        run: docker push aboumicho/scheduler-nodejs-app:latest
+  deploy: 
+    needs: build
+    # runs-on:
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-
-    - name: Build
-      run: |
-        npm install
-        npx webpack
