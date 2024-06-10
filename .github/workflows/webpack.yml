@@ -2,7 +2,7 @@ name: CICD
 
 on:
   push:
-    branches: [cicd-docker-ec2]
+    branches: [main]
 
 jobs:
   build:
@@ -27,4 +27,4 @@ jobs:
         run: docker rm -f scheduler-backend-nodejs-container
       - name: Run docker container
         run: docker run -d -p 5000:5000 --name scheduler-backend-nodejs-container integrationninjas/nodejs-app
-        #
+        
