@@ -31,6 +31,27 @@ router.post('/add', async(req, res) => {
     }
 });
 
+router.put("/update/:businessId", async(req, res)=> {
+    try{
+        if(!isValidToken(req, res)){
+            return res.status(403).json({ message: 'Invalid token' });
+        }
+        const {businessId} = req.params;
+        const {name, phoneNumber, address, postalCode} = req.body;
+        const token = decodeJwtToken(req);
+        const userId = token.id;
+        const business = await Business.findById({_id: businessId});
+        if(userId != business.userId){
+            return res.status(403).json({message: "Not allowed for this user"});
+        }else{
+            const updatedBusiness = await Business.findOneAndUpdate({_id: businessId}, {name, phoneNumber, address, postalCode})
+            return res.status(201).json({updatedBusiness});
+        }
+    }catch(error){
+        return res.status(500).json({message: error.message});
+    }
+});
+
 router.get("/:businessId", async(req, res)=>{
     try{
         const { businessId } = req.params;

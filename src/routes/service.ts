@@ -2,6 +2,7 @@ import express from 'express';
 import { isValidToken } from 'utils/jwt';
 const router = express.Router();
 import Service from '../models/service';
+import Availability from 'models/availability';
 
 router.post("/add", async (req,res) => {
     try{
@@ -34,7 +35,24 @@ router.get("/:serviceId", async(req, res)=>{
         const service = Service.findById(serviceId);
         if(!service){
             res.status(404).json({message: "Service not found."});
+        }else{
+            res.status(201).json({service});
         }
+    }catch(error){
+        res.status(500).json({error: error.message})
+    }
+});
+
+router.get("/get-service-availabilities/:serviceId", async (req, res)=>{
+    try{
+        const {serviceId} = req.params;
+        const availabilities = await Availability.find({serviceId});
+        if(!availabilities || availabilities.length === 0){
+            res.status(404).json({message:"No availabilities found for this service."});
+        }else{
+            res.status(201).json({availabilities});
+        }
+
     }catch(error){
         res.status(500).json({error: error.message})
     }

@@ -15,7 +15,7 @@ router.post("/add", async (req, res)=>{
         //case if appointment already booked
         const existingAppointment = await Appointment.find({businessId, serviceId, startTime})
         if(existingAppointment && existingAppointment.length > 0){
-            res.status(400).json({message: "Appointment is already booked"});
+            return res.status(400).json({message: "Appointment is already booked"});
         }else{
             const newAppointment = new Appointment({
                 userId,
@@ -33,6 +33,21 @@ router.post("/add", async (req, res)=>{
         }else{
             return res.status(500).json({message: "Unable to create new appointment"});
         }
+    }
+
+});
+
+router.get("/:appointmentId", async(req, res)=>{
+    try{
+        const {appointmentId} = req.params;
+        const appointment = await Appointment.findById(appointmentId);
+        if(!appointment){
+            res.status(404).json({message:"No appointment available"});
+        }else{
+            res.status(201).json({appointment});
+        }
+    }catch(error){
+        res.status(500).json({message: error.message});
     }
 
 });

@@ -20,7 +20,7 @@ const validateBreaks = (doc, next) => {
         const startTime = new Date(doc.startTime);
         const endTime = new Date(doc.endTime);
         if (breakStartTime < startTime || breakStartTime > endTime || breakEndTime > endTime || breakEndTime < breakStartTime) {
-            const error = new Error("Breaks are not in the range of availability");
+            const error = new Error("Breaks or start/end time are not in the range of availability");
             next(error);
         }
     }
@@ -48,7 +48,6 @@ availabilitySchema.pre('save', async function (next) {
         this._id = counter.seq;
     }
     const doc = this as IAvailability;
-
     const overlappingAvailability = await mongoose.models.Availability.findOne({
         businessId: doc.businessId,
         serviceId: doc.serviceId,
@@ -64,6 +63,24 @@ availabilitySchema.pre('save', async function (next) {
     validateBreaks(doc, next);
     next();
 });
+
+availabilitySchema.pre('findOneAndUpdate', async function (next){
+    const update = this.getUpdate() as Partial<IAvailability>;
+    const startTime = update.startTime;
+    const endTime = update.endTime;
+    const breaks = update.breaks;
+    const businessId = update.businessId;
+    const serviceId = update.serviceId;    
+    const doc = {
+        startTime,
+        endTime,
+        breaks,
+        businessId,
+        serviceId
+      } as IAvailability;
+    validateBreaks(doc, next);
+    next();
+})
 
 const Availability = mongoose.model('Availability', availabilitySchema);
 
