@@ -4,6 +4,8 @@ import bodyParser from 'body-parser';
 import userRouter from "./routes/user";
 import businessRouter from "./routes/business";
 import serviceRouter from "./routes/service";
+import appointmentRouter from "./routes/appointment";
+import availabilityRouter from "./routes/availability";
 
 const app = express();
 
@@ -11,7 +13,7 @@ const app = express();
 app.use(bodyParser.json());
 
 // Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/mydatabase', { useNewUrlParser: true, useUnifiedTopology: true }as ConnectOptions);
+mongoose.connect('mongodb://localhost:27017/mydatabase');
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', () => {
@@ -19,8 +21,9 @@ db.once('open', () => {
 });
 
 // Routes
-app.use('/users', userRouter);
+app.use('/user', userRouter);
 app.use('/business', businessRouter);
 app.use('/service', serviceRouter);
-
+app.use('/appointment', appointmentRouter);
+app.use('/availability', availabilityRouter);
 export default app;

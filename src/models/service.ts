@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { updatePrimaryKey } from "utils/update_primary-key";
+import { updatePrimaryKey } from "utils/update-primary-key";
 
 export interface IService extends Document {
     _id: number;

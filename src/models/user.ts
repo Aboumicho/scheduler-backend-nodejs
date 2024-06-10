@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from 'bcrypt';
-import { updatePrimaryKey } from "utils/update_primary-key";
+import { updatePrimaryKey } from "utils/update-primary-key";
 
 export interface IUser extends Document {
     _id: number;

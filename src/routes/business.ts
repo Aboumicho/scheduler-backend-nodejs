@@ -2,6 +2,7 @@ import express from 'express';
 const router = express.Router();
 import Business from "../models/business";
 import { decodeJwtToken, isValidToken } from 'utils/jwt';
+import Service from 'models/service';
 
 router.post('/add', async(req, res) => {
     try{
@@ -43,19 +44,18 @@ router.get("/:businessId", async(req, res)=>{
     }
 });
 
-router.get("/get-user-businesses/:userId", async(req, res) => {
+router.get("/get-business-services/:businessId", async(req, res)=> {
     try{
-        const {userId} = req.params;
-        const businesses = await Business.find({userId});
-        if(businesses && businesses.length > 0){
-            res.status(201).json(businesses);
+        const {businessId} = req.params;
+        const services = await Service.find({businessId});
+        // Check if any services were found
+        if (!services || services.length === 0) {
+            return res.status(404).json({ message: "No services found for the specified businessId." });
         }
-        else{
-            res.status(404).json({message: "No business for this user"});
-        }
+        // If services are found, return them as a response
+        res.json(services);
     }catch(error){
-        res.status(500).json({error: error.message});
+        res.status(500).json({error: error.message})
     }
 });
-
 export default router;

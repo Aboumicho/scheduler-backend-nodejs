@@ -21,7 +21,7 @@ router.post("/add", async (req,res) => {
     }
     catch(error){
         if(error.code === 11000){
-            res.status(400).json({message: "This service already exists for this Business."})
+            res.status(400).json({message: "This service already exists for this service."})
         }else{
             res.status(400).json({message: "Couldn't add service"});
         }
@@ -35,21 +35,6 @@ router.get("/:serviceId", async(req, res)=>{
         if(!service){
             res.status(404).json({message: "Service not found."});
         }
-    }catch(error){
-        res.status(500).json({error: error.message})
-    }
-});
-
-router.get("/get-business-services/:businessId", async(req, res)=> {
-    try{
-        const {businessId} = req.params;
-        const services = await Service.find({businessId});
-        // Check if any services were found
-        if (!services || services.length === 0) {
-            return res.status(404).json({ message: "No services found for the specified businessId." });
-        }
-        // If services are found, return them as a response
-        res.json(services);
     }catch(error){
         res.status(500).json({error: error.message})
     }
