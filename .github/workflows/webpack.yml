@@ -18,7 +18,7 @@ jobs:
         run: docker push aboumicho/scheduler-backend-nodejs:latest
       - name: Install Docker on EC2 Instance
         run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@your-ec2-instance-public-dns << 'EOF'
+          ssh -o StrictHostKeyChecking=no ec2-user@ec2-18-217-26-98.us-east-2.compute.amazonaws.com << 'EOF'
             sudo yum update -y
             sudo amazon-linux-extras install docker -y
             sudo service docker start
