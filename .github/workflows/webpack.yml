@@ -27,8 +27,9 @@ jobs:
             sudo amazon-linux-extras install docker -y
             sudo service docker start
             sudo systemctl enable docker
-            sudo usermod -a -G docker ec2-user
-            sudo su - ec2-user -c "docker --version"
+            sudo usermod -a -G docker aboumicho
+            newgrp docker
+            docker --version
           EOF
   deploy:
     needs: build
