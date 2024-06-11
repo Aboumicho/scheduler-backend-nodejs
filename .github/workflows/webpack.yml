@@ -16,7 +16,17 @@ jobs:
         run: docker build -t aboumicho/scheduler-backend-nodejs .
       - name: Publish image to docker hub
         run: docker push aboumicho/scheduler-backend-nodejs:latest
-        
+      - name: Install Docker on EC2 Instance
+      run: |
+        ssh -o StrictHostKeyChecking=no ec2-user@your-ec2-instance-public-dns << 'EOF'
+          sudo yum update -y
+          sudo amazon-linux-extras install docker -y
+          sudo service docker start
+          sudo systemctl enable docker
+          sudo usermod -a -G docker ec2-user
+          newgrp docker
+          docker --version
+        EOF
   deploy:
     needs: build
     runs-on: [aws-ec2]
