@@ -6,7 +6,7 @@ import Availability from 'models/availability';
 
 router.post("/add", async (req,res) => {
     try{
-        if(!isValidToken(req, res)){
+        if(!isValidToken(req)){
             return res.status(403).json({ message: 'Invalid token' });
         }
         const {businessId, name, price, description, duration} = req.body;

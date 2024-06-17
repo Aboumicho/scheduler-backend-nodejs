@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.put("/update/:id", async(req, res) => {
     try{
-        if (!isValidToken(req, res)) {
+        if (!isValidToken(req)) {
             return res.status(403).json({ message: 'Invalid token' });
         }
         const token = decodeJwtToken(req);
@@ -26,16 +26,16 @@ router.put("/update/:id", async(req, res) => {
         }
         else{
             const updatedAvailability = await Availability.findOneAndUpdate({_id: availabilityId}, {serviceId, businessId, startTime, endTime, breaks} );
-            res.status(200).json({ updatedAvailability });
+            return res.status(200).json({ updatedAvailability });
         }
     }catch(error){
-        res.status(500).json({message: error.message});
+        return res.status(500).json({message: error.message});
     }
 });
 
 router.post("/add", async (req, res)=>{
     try{
-        if(!isValidToken(req, res)){
+        if(!isValidToken(req)){
             res.status(403).json({ message: 'Invalid token' });
         }
         const token = decodeJwtToken(req);

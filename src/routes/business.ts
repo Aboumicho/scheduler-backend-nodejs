@@ -6,7 +6,7 @@ import Service from 'models/service';
 
 router.post('/add', async(req, res) => {
     try{
-        if(!isValidToken(req, res)){
+        if(!isValidToken(req)){
             return res.status(403).json({ message: 'Invalid token' });
         }
         const {name, phoneNumber, address, postalCode} = req.body;
@@ -33,7 +33,7 @@ router.post('/add', async(req, res) => {
 
 router.put("/update/:businessId", async(req, res)=> {
     try{
-        if(!isValidToken(req, res)){
+        if(!isValidToken(req)){
             return res.status(403).json({ message: 'Invalid token' });
         }
         const {businessId} = req.params;

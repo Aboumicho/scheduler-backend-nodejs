@@ -13,7 +13,7 @@ export const generateToken = (user: IUser) => {
     return jwt.sign({ id: user._id, email: user.email, name: user.name }, secret, { expiresIn: '72h' });
 };
 
-export const isValidToken = (req, res) => {
+export const isValidToken = (req) => {
     try {
         const token = extractToken(req);
         return jwt.verify(token, secret, (err, user) => {

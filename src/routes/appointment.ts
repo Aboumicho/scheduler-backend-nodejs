@@ -1,11 +1,12 @@
 import express from 'express';
 import Appointment from 'models/appointment';
+import Business from 'models/business';
 import { decodeJwtToken, isValidToken } from 'utils/jwt';
 const router = express.Router();
 
 router.post("/add", async (req, res)=>{
     try{
-        if(!isValidToken(req, res)){
+        if(!isValidToken(req)){
             return res.status(403).json({ message: 'Invalid token' });
         }
         const token = decodeJwtToken(req);
@@ -36,6 +37,30 @@ router.post("/add", async (req, res)=>{
     }
 
 });
+
+router.put("/update/:id", async (req, res) => {
+    try{
+        if (!isValidToken(req)) {
+            return res.status(403).json({ message: 'Invalid token' });
+        }
+        const token = decodeJwtToken(req);
+        const userId = token.id;
+        const appointmentId = req.params.id;
+        const {startTime, endTime} = req.body;
+        const existingAppointment = await Appointment.findById({_id: appointmentId});
+        const existingBusiness = await Business.findById({_id: existingAppointment.businessId});
+        if(userId !== existingAppointment.userId || userId !== existingBusiness.userId){
+            return res.status(401).json({message: "Unauthorized for user"});
+        }
+        if(!existingAppointment){
+            return res.status(404).json({message:"Appointment doesn't exist"});
+        }
+        const newAppointment = await Appointment.findOneAndUpdate({_id: appointmentId}, {startTime, endTime});
+        return res.status(201).json(newAppointment);
+    }catch(error){
+        return res.status(500).json({message: error.message});
+    }
+})
 
 router.get("/:appointmentId", async(req, res)=>{
     try{
