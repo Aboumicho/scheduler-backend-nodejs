@@ -31,7 +31,7 @@ jobs:
       - name: Launch EC2 instance
         id: ec2
         run: |
-          INSTANCE_ID=$(aws ec2 run-instances --image-id ami-12345678 --count 1 --instance-type t2.micro --key-name MyKeyPair --security-group-ids sg-12345678 --query 'Instances[0].InstanceId' --output text)
+          INSTANCE_ID=$(aws ec2 run-instances --image-id ami-0ca2e925753ca2fb4 --count 1 --instance-type t2.micro --key-name MyKeyPair --security-group-ids sg-05c43919e1d6449d8 --query 'Instances[0].InstanceId' --output text)
           echo "::set-output name=instance_id::$INSTANCE_ID"
 
       - name: Wait for EC2 instance to be in running state
