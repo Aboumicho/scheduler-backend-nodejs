@@ -21,14 +21,44 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-  deploy:
-    needs: build
-    runs-on: [aws-ec2]
-    steps:
-      - name: Pull image from docker hub
-        run: docker pull -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }} aboumicho/scheduler-backend-nodejs:latest
-      - name: Delete old container
-        run: docker rm -f scheduler-backend-nodejs-container
-      - name: Run docker container
-        run: docker run -d -p 5000:5000 --name scheduler-backend-nodejs-container aboumicho/scheduler-backend-nodejs
+      - name: Set up AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Launch EC2 instance
+        id: ec2
+        run: |
+          INSTANCE_ID=$(aws ec2 run-instances --image-id ami-12345678 --count 1 --instance-type t2.micro --key-name MyKeyPair --security-group-ids sg-12345678 --query 'Instances[0].InstanceId' --output text)
+          echo "::set-output name=instance_id::$INSTANCE_ID"
+
+      - name: Wait for EC2 instance to be in running state
+        run: |
+          aws ec2 wait instance-running --instance-ids ${{ steps.ec2.outputs.instance_id }}
+
+      - name: Get EC2 instance public DNS
+        id: dns
+        run: |
+          PUBLIC_DNS=$(aws ec2 describe-instances --instance-ids ${{ steps.ec2.outputs.instance_id }} --query 'Reservations[0].Instances[0].PublicDnsName' --output text)
+          echo "::set-output name=public_dns::$PUBLIC_DNS"
+
+      - name: Install SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: SSH into EC2 and deploy Docker container
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@${{ steps.dns.outputs.public_dns }} << 'EOF'
+            docker pull aboumicho/scheduler-backend-nodejs:latest
+            docker rm -f scheduler-backend-nodejs-container || true
+            docker run -d -p 5000:5000 --name scheduler-backend-nodejs-container aboumicho/scheduler-backend-nodejs
+          EOF
+
+      - name: Terminate EC2 instance
+        run: |
+          aws ec2 terminate-instances --instance-ids ${{ steps.ec2.outputs.instance_id }}
         
