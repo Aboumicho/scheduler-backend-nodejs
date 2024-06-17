@@ -20,27 +20,15 @@ jobs:
         uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
   deploy:
-      - name: Deploy toEC2 instance
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{secrets.EC2_HOST}}
-          user: ${{secrets.EC2_USERNAME}}
-          key: ${{secrets/EC2_PRIVATE_KEY}}
-          script: |
-            docker stop scheduler-backend-nodejs || true
-            docker rm scheduler-backend-nodejs || true
-            docker pull -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }} ${{secrets.DOCKER_USERNAME}}/scheduler-backend-nodejs
-            docker run -d --name scheduler-backend-nodejs -p 5000:5000 ${{secrets.DOCKER_USERNAME}}/scheduler-backend-nodejs
-  # deploy:
-  #   needs: build
-  #   runs-on: [aws-ec2]
-  #   steps:
-  #     - name: Pull image from docker hub
-  #       run: docker pull -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }} aboumicho/scheduler-backend-nodejs:latest
-  #     - name: Delete old container
-  #       run: docker rm -f scheduler-backend-nodejs-container
-  #     - name: Run docker container
-  #       run: docker run -d -p 5000:5000 --name scheduler-backend-nodejs-container aboumicho/scheduler-backend-nodejs
-    
+    needs: build
+    runs-on: [aws-ec2]
+    steps:
+      - name: Pull image from docker hub
+        run: docker pull -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }} aboumicho/scheduler-backend-nodejs:latest
+      - name: Delete old container
+        run: docker rm -f scheduler-backend-nodejs-container
+      - name: Run docker container
+        run: docker run -d -p 5000:5000 --name scheduler-backend-nodejs-container aboumicho/scheduler-backend-nodejs
         
