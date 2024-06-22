@@ -49,9 +49,18 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/authorized_keys
+      - name: Add public key to authorized_keys if not already added
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_PUBLIC_DNS }} << 'EOF'
+            mkdir -p ~/.ssh
+            touch ~/.ssh/authorized_keys
+            chmod 700 ~/.ssh
+            chmod 600 ~/.ssh/authorized_keys
+            grep -qxF "${{ secrets.SSH_PUBLIC_KEY }}" ~/.ssh/authorized_keys || echo "${{ secrets.SSH_PUBLIC_KEY }}" >> ~/.ssh/authorized_keys
+          EOF
       - name: SSH into EC2 and deploy Docker container
         run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/authorized_keys ec2-user@${{ secrets.EC2_PUBLIC_DNS }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_PUBLIC_DNS }} << 'EOF'
             docker pull aboumicho/scheduler-backend-nodejs:latest
             docker rm -f scheduler-backend-nodejs-container || true
             docker run -d -p 5000:5000 --name scheduler-backend-nodejs-container aboumicho/scheduler-backend-nodejs
