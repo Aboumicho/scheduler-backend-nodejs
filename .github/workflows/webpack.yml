@@ -52,6 +52,7 @@ jobs:
       - name: SSH into EC2 and deploy Docker container
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_PUBLIC_DNS }} << 'EOF'
+            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }} 
             docker pull aboumicho/scheduler-backend-nodejs:latest
             docker rm -f scheduler-backend-nodejs-container || true
             docker run -d -p 5000:5000 --name scheduler-backend-nodejs-container aboumicho/scheduler-backend-nodejs
