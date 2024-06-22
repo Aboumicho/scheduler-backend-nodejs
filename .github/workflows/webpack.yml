@@ -49,7 +49,13 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-
+      - name: Add public key to authorized_keys if not already added
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_PUBLIC_DNS }} << 'EOF'
+            mkdir -p ~/.ssh
+            touch ~/.ssh/authorized_keys
+            grep -qxF "${{ secrets.SSH_PUBLIC_KEY }}" ~/.ssh/authorized_keys || echo "${{ secrets.SSH_PUBLIC_KEY }}" >> ~/.ssh/authorized_keys
+          EOF
       - name: SSH into EC2 and deploy Docker container
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_PUBLIC_DNS }} << 'EOF'
