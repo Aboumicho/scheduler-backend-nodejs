@@ -8,6 +8,7 @@ export interface IBusiness extends Document {
     userId: number;
     address: string;
     postalCode: string;
+    employees: number[]
 }
 
 const businessSchema = new mongoose.Schema<IBusiness>({
@@ -19,7 +20,8 @@ const businessSchema = new mongoose.Schema<IBusiness>({
     name: {type: String, unique: true, required: true},
     phoneNumber: {type: String, required:true},
     address: {type: String},
-    postalCode: {type: String, required: true}
+    postalCode: {type: String, required: true},
+    employees:{type: [Number] }
 });
 
 // Auto-increment _id before saving

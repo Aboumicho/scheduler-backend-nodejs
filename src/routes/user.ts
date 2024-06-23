@@ -1,7 +1,7 @@
 import express from 'express';
 const router = express.Router();
 import User from "../models/user";
-import { generateToken } from 'utils/jwt';
+import { generateToken, isValidToken } from 'utils/jwt';
 import { isUserTypeValid } from 'constants/user-type';
 import Business from 'models/business';
 
@@ -47,12 +47,12 @@ router.post('/login', async (req: any, res:any) => {
     try {
         const user = await User.findOne({ email: req.body.email });
         if (!user) {
-            return res.status(403).json({ message: 'Invalid email or password' });
+            throw {message: "Invalid email or password", code: 403}
         }
 
         const isMatch = await user.comparePassword(req.body.password);
         if (!isMatch) {
-            return res.status(401).json({ message: 'Invalid email or password' });
+            throw {message: "Invalid email or password", code: 401};
         }
         const token = generateToken(user);
         res.status(200).json({ message: 'Login successful', token });
@@ -69,10 +69,21 @@ router.get("/get-user-businesses/:userId", async(req, res) => {
             res.status(201).json(businesses);
         }
         else{
-            res.status(404).json({message: "No business for this user"});
+            throw {message: "No business for this user", code: 404};
         }
     }catch(error){
-        res.status(500).json({error: error.message});
+        res.status(error.code ?? 500).json({error: error.message});
+    }
+});
+
+router.get("/get-user-employment", async(req,res) => {
+    try{
+        if(!isValidToken(req)){
+
+        }
+
+    }catch(error){
+
     }
 });
 

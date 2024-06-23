@@ -1,7 +1,8 @@
 export enum USERTYPE {
     ADMIN,
     CUSTOMER,
-    BUSINESSOWNER
+    BUSINESSOWNER,
+    EMPLOYEE
 };
 
 export function isUserTypeValid(value) {

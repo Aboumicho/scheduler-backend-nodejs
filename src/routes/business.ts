@@ -1,13 +1,15 @@
 import express from 'express';
 const router = express.Router();
 import Business from "../models/business";
-import { decodeJwtToken, isValidToken } from 'utils/jwt';
+import { decodeJwtToken, isValidToken, validateAndAuthorize } from 'utils/jwt';
 import Service from 'models/service';
+import User from 'models/user';
+import { USERTYPE } from 'constants/user-type';
 
 router.post('/add', async(req, res) => {
     try{
         if(!isValidToken(req)){
-            return res.status(403).json({ message: 'Invalid token' });
+            throw { message: 'Invalid token', code: 403 }
         }
         const {name, phoneNumber, address, postalCode} = req.body;
         const token = decodeJwtToken(req);
@@ -26,29 +28,21 @@ router.post('/add', async(req, res) => {
         if(error.code === 11000){
             return res.status(400).json({message: "Business already exists, try another name"});
         }else{
-            return res.status(500).json({message: "Unable to create new business"});
+            return res.status(error.code ?? 500).json({message: "Unable to create new business"});
         }
     }
 });
 
 router.put("/update/:businessId", async(req, res)=> {
     try{
-        if(!isValidToken(req)){
-            return res.status(403).json({ message: 'Invalid token' });
-        }
         const {businessId} = req.params;
         const {name, phoneNumber, address, postalCode} = req.body;
-        const token = decodeJwtToken(req);
-        const userId = token.id;
         const business = await Business.findById({_id: businessId});
-        if(userId != business.userId){
-            return res.status(403).json({message: "Not allowed for this user"});
-        }else{
-            const updatedBusiness = await Business.findOneAndUpdate({_id: businessId}, {name, phoneNumber, address, postalCode})
-            return res.status(201).json({updatedBusiness});
-        }
+        validateAndAuthorize(req, res, business.userId);
+        const updatedBusiness = await Business.findOneAndUpdate({_id: businessId}, {name, phoneNumber, address, postalCode})
+        return res.status(201).json({updatedBusiness});
     }catch(error){
-        return res.status(500).json({message: error.message});
+        return res.status(error.code ?? 500).json({message: error.message});
     }
 });
 
@@ -57,11 +51,11 @@ router.get("/:businessId", async(req, res)=>{
         const { businessId } = req.params;
         const business = await Business.findById(businessId);
         if(!business){
-            return res.status(404).json({message: "Business not found."});
+            throw {message: "Business not found.", code: 404}
         }
         res.status(201).json(business);
     }catch(error){
-        res.status(500).json({error: error.message});
+        res.status(error.code ?? 500).json({error: error.message});
     }
 });
 
@@ -71,12 +65,65 @@ router.get("/get-business-services/:businessId", async(req, res)=> {
         const services = await Service.find({businessId});
         // Check if any services were found
         if (!services || services.length === 0) {
-            return res.status(404).json({ message: "No services found for the specified businessId." });
+            throw { message: "No services found for the specified businessId.", code: 404 };
         }
         // If services are found, return them as a response
         res.json(services);
     }catch(error){
-        res.status(500).json({error: error.message})
+        res.status(error.code ?? 500).json({error: error.message})
     }
 });
+
+router.post("/:businessId/add-business-employee", async (req, res) =>{
+    try{
+        
+        const {businessId} = req.params;
+        const business = await Business.findById(businessId);
+        validateAndAuthorize(req, res, business.userId);
+        const {email} = req.body;
+        const employee = await User.findOne({email})
+        if(!employee){
+            // SEND INVITATION TO CREATE ACCOUNT
+        }
+        if(employee && !employee.usertype.includes(USERTYPE[USERTYPE.EMPLOYEE])){
+            const usertype = employee.usertype;
+            usertype.push(USERTYPE[USERTYPE.EMPLOYEE]);
+            employee.usertype = usertype;
+            await employee.save();
+            await business.employees.push(employee.id);
+            await business.save();
+        }
+        return res.status(200).json(employee);
+    }catch(error){
+        return res.status(error.code ?? 500).json({message: error.message});
+    }
+});
+
+router.delete("/:businessId" , async(req, res) =>{
+    try{
+        const {businessId} = req.params;
+        const business = await Business.findById(businessId);
+        validateAndAuthorize(req, res, business.userId);
+        await Business.deleteOne(businessId);
+        return res.status(201).json({message: "Business deleted"});
+    }catch(error){
+        return res.status(error.code ?? 500).json({message: error.message});
+    }
+});
+
+router.post("/:businessId/remove-employee", async (req, res) => {
+    try{
+        const {businessId} = req.params;
+        const {userId} = req.body;
+        const business = await Business.findById(businessId);
+        validateAndAuthorize(req, res, business.userId);
+        const employees = business.employees.filter(employee => employee != userId);
+        business.employees = employees;
+        await business.save();
+        return res.status(201).json({message: "Employee deleted"});
+    }catch(error){
+        return res.status(error.code ?? 500).json({message: error.message});
+    }
+});
+
 export default router;

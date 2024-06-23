@@ -41,3 +41,13 @@ export const decodeJwtToken = (req) => {
         return null;
     }
 }
+
+export const validateAndAuthorize = (req, res, userId) => {
+    if(!isValidToken(req)){
+        throw {message: "Invalid token", code: 401};
+    }
+    const token = decodeJwtToken(req);
+    if(userId !== token.id){
+        throw {message: "Unauthorized" , code: 403}
+    }
+}

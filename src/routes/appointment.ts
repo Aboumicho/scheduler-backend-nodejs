@@ -16,7 +16,7 @@ router.post("/add", async (req, res)=>{
         //case if appointment already booked
         const existingAppointment = await Appointment.find({businessId, serviceId, startTime})
         if(existingAppointment && existingAppointment.length > 0){
-            return res.status(400).json({message: "Appointment is already booked"});
+            throw {message: "Appointment is already booked", code: 400}
         }else{
             const newAppointment = new Appointment({
                 userId,
@@ -32,7 +32,7 @@ router.post("/add", async (req, res)=>{
         if(error.code === 11000){
             return res.status(400).json({message: "Appointment already exists, try another name"});
         }else{
-            return res.status(500).json({message: "Unable to create new appointment"});
+            return res.status(error.code ?? 500).json({message: error.message});
         }
     }
 
@@ -50,15 +50,15 @@ router.put("/update/:id", async (req, res) => {
         const existingAppointment = await Appointment.findById({_id: appointmentId});
         const existingBusiness = await Business.findById({_id: existingAppointment.businessId});
         if(userId !== existingAppointment.userId || userId !== existingBusiness.userId){
-            return res.status(401).json({message: "Unauthorized for user"});
+            throw {message: "Unauthorized for user", code: 401}
         }
         if(!existingAppointment){
-            return res.status(404).json({message:"Appointment doesn't exist"});
+            throw {message:"Appointment doesn't exist", code: 404}
         }
         const newAppointment = await Appointment.findOneAndUpdate({_id: appointmentId}, {startTime, endTime});
         return res.status(201).json(newAppointment);
     }catch(error){
-        return res.status(500).json({message: error.message});
+        return res.status(error.code ?? 500).json({message: error.message});
     }
 })
 
@@ -67,12 +67,12 @@ router.get("/:appointmentId", async(req, res)=>{
         const {appointmentId} = req.params;
         const appointment = await Appointment.findById(appointmentId);
         if(!appointment){
-            res.status(404).json({message:"No appointment available"});
+            throw {message:"No appointment available", code: 404}
         }else{
             res.status(201).json({appointment});
         }
     }catch(error){
-        res.status(500).json({message: error.message});
+        res.status(error.code ?? 500).json({message: error.message});
     }
 
 });

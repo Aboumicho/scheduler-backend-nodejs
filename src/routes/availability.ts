@@ -6,7 +6,7 @@ const router = express.Router();
 router.put("/update/:id", async(req, res) => {
     try{
         if (!isValidToken(req)) {
-            return res.status(403).json({ message: 'Invalid token' });
+            throw { message: 'Invalid token', code: 403 }
         }
         const token = decodeJwtToken(req);
         const userId = token.id;
@@ -17,26 +17,25 @@ router.put("/update/:id", async(req, res) => {
         const availability = await Availability.findById(availabilityId);
 
         if (!availability) {
-            return res.status(404).json({ message: 'Availability not found' });
+            throw { message: 'Availability not found', code: 401 }
         }
 
         // Ensure the user has permission to update this availability
         if (availability.userId !== userId) {
-            return res.status(403).json({ message: 'You do not have permission to update this availability' });
+            throw { message: 'You do not have permission to update this availability', code: 403 }
         }
-        else{
-            const updatedAvailability = await Availability.findOneAndUpdate({_id: availabilityId}, {serviceId, businessId, startTime, endTime, breaks} );
-            return res.status(200).json({ updatedAvailability });
-        }
+        
+        const updatedAvailability = await Availability.findOneAndUpdate({_id: availabilityId}, {serviceId, businessId, startTime, endTime, breaks} );
+        return res.status(200).json({ updatedAvailability });
     }catch(error){
-        return res.status(500).json({message: error.message});
+        return res.status(error.code ?? 500).json({message: error.message});
     }
 });
 
 router.post("/add", async (req, res)=>{
     try{
         if(!isValidToken(req)){
-            res.status(403).json({ message: 'Invalid token' });
+            throw { message: 'Invalid token', code:403 }
         }
         const token = decodeJwtToken(req);
         const userId = token.id;
@@ -54,7 +53,7 @@ router.post("/add", async (req, res)=>{
 
 
     }catch(error){
-        res.status(500).json({message: error.message});
+        res.status(error.code ?? 500).json({message: error.message});
     }
 
 });
