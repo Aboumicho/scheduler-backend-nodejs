@@ -5,13 +5,11 @@ import { updatePrimaryKey } from 'utils/update-primary-key';
 export interface IBusinessUser extends Document {
     _id: number;
     userId: number;
-    businessSpecificField: string;
 }
 
 const businessUserSchema = new Schema<IBusinessUser>({
     _id: {type: Number},
-    userId: { type: Number, ref: 'User', required: true },
-    businessSpecificField: { type: String, required: true }
+    userId: { type: Number, ref: 'User', required: true, unique: true }
 });
 
 businessUserSchema.pre('save', async function(next) {

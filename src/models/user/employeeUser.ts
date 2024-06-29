@@ -5,13 +5,11 @@ import { updatePrimaryKey } from 'utils/update-primary-key';
 export interface IEmployeeUser extends Document {
     _id: number;
     userId: number;
-    employeeSpecificField: string;
 }
 
 const employeeUserSchema = new Schema<IEmployeeUser>({
     _id: {type: Number},
-    userId: { type: Number, ref: 'User', required: true },
-    employeeSpecificField: { type: String, required: true }
+    userId: { type: Number, ref: 'User', required: true }
 });
 
 employeeUserSchema.pre('save', async function(next) {

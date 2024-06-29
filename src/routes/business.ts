@@ -5,6 +5,7 @@ import { decodeJwtToken, isValidToken, validateAndAuthorize } from 'utils/jwt';
 import Service from 'models/service';
 import User from 'models/user/user';
 import { USERTYPE } from 'constants/user-type';
+import BusinessEmployee from 'models/businessEmployee';
 
 router.post('/add', async(req, res) => {
     try{
@@ -74,30 +75,6 @@ router.get("/get-business-services/:businessId", async(req, res)=> {
     }
 });
 
-router.post("/:businessId/add-business-employee", async (req, res) =>{
-    try{
-        
-        const {businessId} = req.params;
-        const business = await Business.findById(businessId);
-        validateAndAuthorize(req, res, business.userId);
-        const {email} = req.body;
-        const employee = await User.findOne({email})
-        if(!employee){
-            // SEND INVITATION TO CREATE ACCOUNT
-        }
-        if(employee && !employee.usertype.includes(USERTYPE[USERTYPE.EMPLOYEE])){
-            const usertype = employee.usertype;
-            usertype.push(USERTYPE[USERTYPE.EMPLOYEE]);
-            employee.usertype = usertype;
-            await employee.save();
-            await business.employees.push(employee.id);
-            await business.save();
-        }
-        return res.status(200).json(employee);
-    }catch(error){
-        return res.status(error.code ?? 500).json({message: error.message});
-    }
-});
 
 router.delete("/:businessId" , async(req, res) =>{
     try{
@@ -111,18 +88,28 @@ router.delete("/:businessId" , async(req, res) =>{
     }
 });
 
-router.post("/:businessId/remove-employee", async (req, res) => {
+router.post("/:businessId/add-business-employee", async(req, res)=>{
     try{
         const {businessId} = req.params;
-        const {userId} = req.body;
         const business = await Business.findById(businessId);
+        const employeeUser = await User.findOne({ email: req.body.email });
+        if (!employeeUser) {
+            // TODO Should send email notification to register !!
+            throw {message: "We couldn't find Employee", code: 404}
+        }
+        if(!business){
+            throw {message: "We couldn't find Business", code: 404}
+        }
         validateAndAuthorize(req, res, business.userId);
-        const employees = business.employees.filter(employee => employee != userId);
-        business.employees = employees;
-        await business.save();
-        return res.status(201).json({message: "Employee deleted"});
+        const newBusinessEmployee = new BusinessEmployee({businessId: business.id, employeeUserId: employeeUser.id});
+        await newBusinessEmployee.save();
+        res.status(200).json(newBusinessEmployee);
     }catch(error){
-        return res.status(error.code ?? 500).json({message: error.message});
+        if(error.code === 11000){
+            res.status(400).json({message: "Entry businessEmployee already exists"});
+        }else{
+            res.status(error.status ?? 500).json({message: error.message});
+        }
     }
 });
 
