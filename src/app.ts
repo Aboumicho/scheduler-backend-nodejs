@@ -1,7 +1,8 @@
 import express from 'express';
 import mongoose, { ConnectOptions } from 'mongoose';
 import bodyParser from 'body-parser';
-import userRouter from "./routes/user";
+import userRouter from "./routes/user/user";
+import customerUserRouter from "./routes/user/customerUser";
 import businessRouter from "./routes/business";
 import serviceRouter from "./routes/service";
 import appointmentRouter from "./routes/appointment";
@@ -32,4 +33,5 @@ app.use('/business', businessRouter);
 app.use('/service', serviceRouter);
 app.use('/appointment', appointmentRouter);
 app.use('/availability', availabilityRouter);
+app.use('/customerUser', customerUserRouter);
 export default app;

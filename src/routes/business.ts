@@ -3,7 +3,7 @@ const router = express.Router();
 import Business from "../models/business";
 import { decodeJwtToken, isValidToken, validateAndAuthorize } from 'utils/jwt';
 import Service from 'models/service';
-import User from 'models/user';
+import User from 'models/user/user';
 import { USERTYPE } from 'constants/user-type';
 
 router.post('/add', async(req, res) => {

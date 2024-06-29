@@ -15,8 +15,7 @@ const userSchema = new mongoose.Schema<IUser>({
     _id: { type: Number},
     name: String,
     email: {type: String, required: true, unique: true},
-    password: String,
-    usertype: [String]
+    password: String
 });
 
 userSchema.pre('save', async function(next) {

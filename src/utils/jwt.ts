@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { IUser } from 'models/user';
+import { IUser } from 'models/user/user';
 
 const secret = 'your-secret-key'; // Use an environment variable in a real application
 

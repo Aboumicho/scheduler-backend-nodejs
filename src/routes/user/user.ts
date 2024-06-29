@@ -1,6 +1,6 @@
 import express from 'express';
 const router = express.Router();
-import User from "../models/user";
+import User from "../../models/user/user";
 import { generateToken, isValidToken } from 'utils/jwt';
 import { isUserTypeValid } from 'constants/user-type';
 import Business from 'models/business';
@@ -15,24 +15,11 @@ router.post('/register', async (req, res) => {
         const user = new User({
             name: req.body.name,
             email: req.body.email,
-            password: req.body.password,
-            usertype: [req.body.usertype]
+            password: req.body.password
         });
         const newUser = await user.save();
         res.status(201).json(newUser);
     } catch (err) {
-        //Block to add new usertype to existing account
-        /**
-         * @todo refactor this later on
-         *  */ 
-        const user = await User.findOne({ email: req.body.email })
-        if(!user.usertype.includes(req.body.usertype)){
-            const updatedUserType = user.usertype;
-            updatedUserType.push(req.body.usertype);
-            Object.assign(user, {usertype: updatedUserType});
-            const newUser = await user.save();
-            res.status(201).json(newUser);
-        }
         if (err.code === 11000) {
             // Duplicate email
             res.status(400).json({ message: 'Email already exists' });
